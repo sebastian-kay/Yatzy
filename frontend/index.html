@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1, initial-scale=1, maximum-scale=1, shrink-to-fit=no" />
+    <title>Yatzy</title>
+
+    <link rel="stylesheet" type="text/css" href="bootstrap.dark.min.css" />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <link rel="stylesheet" type="text/css"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" />
+
+    <!-- JS --> 
+    <script rel="prerender" src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script rel="prerender" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.min.js"></script>
+    <script rel="prerender" src="https://use.fontawesome.com/releases/v5.15.2/js/all.js"></script>
+	<!-- All custom frontend javascript in frontend.js. -->
+    <script src="frontend.js"></script>
+</head>
+
+<body>
+    <!-- This vue div will be Vue.js playground. -->
+    <div id="vue" v-cloak>
+        <nav class="navbar fixed-top navbar-expand bg-info">
+            <div class="collapse navbar-collapse d-flex flex-wrap justify-content-center">
+             <ul class="navbar-nav mx-auto" style="position: relative;">
+                    <template v-for="(line, index) in playerAndPoints">
+                        <template v-for="cell in line.slice(1, 2)" v-if="cell>''">
+                            <li class="nav-link playerfullpoints mr-3">
+                                
+                                
+                                <span v-if="cell === bestPlayerName" class="text-warning mr-0"><i class="fas fa-star fa-spin fa-3x"></i></span>
+                                
+                                <template v-if="cell == activePlayerName">
+                                    <span class="mr-2 text-light"style="font-family: 'Bangers', cursive; font-size: 3rem">{{ cell }}</span>
+                                    
+                                </template>
+                                <template v-else>
+                                    <span class="mr-2" style="font-family: 'Bangers', cursive; font-size: 3rem">{{ cell }}</span>
+                                </template>
+                                
+                                <template v-for="cell2 in line.slice(2)">
+                                    <span class="badge badge-warning text-light"style="font-family: Bangers, cursive; font-size: 1.8rem; position: relative; top: -15px;"v-if="cell2>''">{{ cell2 }}</span>
+                                    <span class="badge badge-warning text-light"style="font-family: Bangers, cursive; font-size: 1.8rem; position: relative; top: -15px;"v-if="cell2==''">0</span>
+                                </template>
+                            </li>
+                        </template>
+
+                    </template>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container-fluid" style="" id="jatsi_main">
+            <div style="background-color: #36404a; margin-top: 60px;" class="container row mx-auto p-4"
+                id="jatsi_center">
+                <!-- Buttons are visible or hidden depending on current game situation. -->
+
+                <div class="col-12" v-if="activeAiPlayer=='Y'">{{ aiMessage }}</div>
+
+                <!--div class="form-inline col-12 mb-3" v-if="(gameStarted==false && highScoresVisible==false) || (endGameSituation==true && highScoresVisible==false)">
+                    <div class="form-group ml-auto">
+                        <label for="numberOfPlayers"> {{ ui.numberOfPlayers }}: </label>
+                        <select class="form-control form-control-lg ml-3 my-1 mr-sm-2" id="numberOfPlayers" name="numberOfPlayers" v-model="numberOfPlayers">
+                            <option value="0">1</option>
+                            <option value="1">2</option>
+                            <option value="2">3</option>
+                            <option value="3">4</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 row mb-3" v-if="(gameStarted==false && highScoresVisible==false) || (endGameSituation==true && highScoresVisible==false)">
+                    <div class="col-lg-9 col-6">Spieler Name: </div>
+                    <div class="col">Typ: </div>
+                </div-->
+
+
+                <div class="col-12 row mb-3 d-inline-flex form-inline form-control-xxl"
+                    v-if="(gameStarted==false && highScoresVisible==false) || (endGameSituation==true && highScoresVisible==false)">
+
+                    <!-- Spieler 1 -->
+                    <template v-if="numberOfPlayers>-1 && player1TypeInput=='N'">
+                        <input autocomplete="off" class="form-control form-control-xxl mt-2" type="text"
+                            id="player1NameInput" v-model="player1NameInput" :placeholder="[[ ui.player1Name ]]"
+                            maxlength="150" style="width: auto" />
+                    </template>
+                    <template v-if="numberOfPlayers>-1 && player1TypeInput=='Y'">
+
+                        <input autocomplete="off" class="form-control form-control-xxl mt-2" type="text"
+                            id="player1NameInput" v-model="player1NameInput" maxlength="50" disabled />
+                    </template>
+                    <template v-if="numberOfPlayers>-1">
+
+                        <div name="player1TypeInput" class="form-inline form-control-xxl mt-2 px-2">
+                            <input type="radio" class="hide" id="player1TypeInput1" name="player1TypeInput" value="N"
+                                v-model="player1TypeInput" v-on:change="aiTrigger(1)">
+                            <label class="ml-2" for="player1TypeInput1">
+                                <i class="fas fa-fw fa-user"></i>
+                            </label>
+                            <input type="radio" class="hide" id="player1TypeInput2" value="Y" name="player1TypeInput"
+                                v-model="player1TypeInput" v-on:change="aiTrigger(1)">
+                            <label class="ml-2" for="player1TypeInput2">
+                                <i class="fas fa-fw fa-robot"></i>
+                            </label>
+                        </div>
+                    </template>
+
+
+                    <!-- Spieler 2 -->
+                    <template v-if="numberOfPlayers>0 && player2TypeInput=='N'">
+                        <input autocomplete="off" class="form-control form-control-xxl mt-2" type="text"
+                            id="player2NameInput" v-model="player2NameInput" :placeholder="[[ ui.player2Name ]]"
+                            maxlength="150" style="width: auto" />
+                    </template>
+                    <template v-if="numberOfPlayers>0 && player2TypeInput=='Y'">
+
+                        <input autocomplete="off" class="form-control form-control-xxl mt-2" type="text"
+                            id="player2NameInput" v-model="player2NameInput" maxlength="50" disabled />
+                    </template>
+                    <template v-if="numberOfPlayers>0">
+
+                        <div name="player2TypeInput" class="form-inline form-control-xxl mt-2 px-2">
+                            <input type="radio" class="hide" id="player2TypeInput1" name="player2TypeInput" value="N"
+                                v-model="player2TypeInput" v-on:change="aiTrigger(2)">
+                            <label class="ml-2" for="player2TypeInput1">
+                                <i class="fas fa-fw fa-user"></i>
+                            </label>
+                            <input type="radio" class="hide" id="player2TypeInput2" value="Y" name="player2TypeInput"
+                                v-model="player2TypeInput" v-on:change="aiTrigger(2)">
+                            <label class="ml-2" for="player2TypeInput2">
+                                <i class="fas fa-fw fa-robot"></i>
+                            </label>
+                        </div>
+                    </template>
+
+                    <!-- Spieler 3 -->
+                    <template v-if="numberOfPlayers>1 && player3TypeInput=='N'">
+                        <input autocomplete="off" class="form-control form-control-xxl mt-2" type="text"
+                            id="player3NameInput" v-model="player3NameInput" :placeholder="[[ ui.player3Name ]]"
+                            maxlength="150" style="width: auto" />
+                    </template>
+                    <template v-if="numberOfPlayers>1 && player3TypeInput=='Y'">
+
+                        <input autocomplete="off" class="form-control form-control-xxl mt-2" type="text"
+                            id="player3NameInput" v-model="player3NameInput" maxlength="50" disabled />
+                    </template>
+                    <template v-if="numberOfPlayers>1">
+
+                        <div name="player3TypeInput" class="form-inline form-control-xxl mt-2 px-2">
+                            <input type="radio" class="hide" id="player3TypeInput1" name="player3TypeInput" value="N"
+                                v-model="player3TypeInput" v-on:change="aiTrigger(3)">
+                            <label class="ml-2" for="player3TypeInput1">
+                                <i class="fas fa-fw fa-user"></i>
+                            </label>
+                            <input type="radio" class="hide" id="player3TypeInput2" value="Y" name="player3TypeInput"
+                                v-model="player3TypeInput" v-on:change="aiTrigger(3)">
+                            <label class="ml-2" for="player3TypeInput2">
+                                <i class="fas fa-fw fa-robot"></i>
+                            </label>
+                        </div>
+                    </template>
+
+                    <!-- Spieler 4 -->
+                    <template v-if="numberOfPlayers>2 && player4TypeInput=='N'">
+                        <input autocomplete="off" class="form-control form-control-xxl mt-2" type="text"
+                            id="player4NameInput" v-model="player4NameInput" :placeholder="[[ ui.player4Name ]]"
+                            maxlength="150" style="width: auto" />
+                    </template>
+                    <template v-if="numberOfPlayers>2 && player4TypeInput=='Y'">
+
+                        <input autocomplete="off" class="form-control form-control-xxl mt-2" type="text"
+                            id="player4NameInput" v-model="player4NameInput" maxlength="50" disabled />
+                    </template>
+                    <template v-if="numberOfPlayers>2">
+
+                        <div name="player4TypeInput" class="form-inline form-control-xxl mt-2 px-2">
+                            <input type="radio" class="hide" id="player4TypeInput1" name="player4TypeInput" value="N"
+                                v-model="player4TypeInput" v-on:change="aiTrigger(4)">
+                            <label class="ml-2" for="player4TypeInput1">
+                                <i class="fas fa-fw fa-user"></i>
+                            </label>
+                            <input type="radio" class="hide" id="player4TypeInput2" value="Y" name="player4TypeInput"
+                                v-model="player4TypeInput" v-on:change="aiTrigger(4)">
+                            <label class="ml-2" for="player4TypeInput2">
+                                <i class="fas fa-fw fa-robot"></i>
+                            </label>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="col-12 row mb-3 d-flex justify-content-center align-items-center"
+                    v-if="(gameStarted==false && highScoresVisible==false) || (endGameSituation==true && highScoresVisible==false)">
+                    <div class="btn-xxl" v-if="numberOfPlayers!==3" name="numberOfPlayers"
+                        v-on:click="numberOfPlayers += 1" v-model="numberOfPlayers"><i class="fas fa-plus fa-3x"></i>
+                    </div>
+                    <div class="btn-xxl" v-else name="numberOfPlayers" v-on:click="numberOfPlayers += 1"
+                        v-model="numberOfPlayers" style="pointer-events: none; opacity: 0.4;"><i
+                            class="fas fa-plus fa-3x"></i></div>
+                    <div class="btn-xxl" v-if="numberOfPlayers!==0" name="numberOfPlayers"
+                        v-on:click="numberOfPlayers -= 1" v-model="numberOfPlayers"><i class="fas fa-minus"></i></div>
+                    <div class="btn-xxl" v-else name="numberOfPlayers" v-on:click="numberOfPlayers -= 1"
+                        v-model="numberOfPlayers" style="pointer-events: none; opacity: 0.4;"><i
+                            class="fas fa-minus"></i></div>
+                </div>
+
+                <!-- Div that contains the dice. Player can click these to set which dice will be kept and which will be thrown. -->
+                <div class="container d-flex justify-content-center dices mx-5 my-md-5"
+                    v-if="gameStarted==true && highScoresVisible==false && endGameSituation==false"
+                    v-bind:style="disableClickDices">
+                    <div>
+                        <button v-if="dice1Selected==false" v-on:click="dice1Selected=true"
+                            class="btn btn-link btn-lg text-success hold-0 p-0 m-1 dice" :class="disableDice"
+                            id="dice1">{{ dice1 }}</button>
+                        <button v-if="dice1Selected==true" v-on:click="dice1Selected=false"
+                            class="btn btn-link btn-lg text-pink hold-1 p-0 m-1 dice" :class="disableDice" id="dice1">{{
+                            dice1 }}</button>
+                    </div>
+
+                    <div>
+                        <button v-if="dice2Selected==false" v-on:click="dice2Selected=true"
+                            class="btn btn-link btn-lg text-success hold-0 p-0 m-1 dice" :class="disableDice"
+                            id="dice2">{{ dice2 }}</button>
+                        <button v-if="dice2Selected==true" v-on:click="dice2Selected=false"
+                            class="btn btn-link btn-lg text-pink hold-2 p-0 m-1 dice" :class="disableDice" id="dice2">{{
+                            dice2 }}</button>
+                    </div>
+
+                    <div>
+                        <button v-if="dice3Selected==false" v-on:click="dice3Selected=true"
+                            class="btn btn-link text-success hold-0 btn-lg p-0 m-1 dice" :class="disableDice"
+                            id="dice3">{{ dice3 }}</button>
+                        <button v-if="dice3Selected==true" v-on:click="dice3Selected=false"
+                            class="btn btn-link text-pink btn-lg hold-3 p-0 m-1 dice" :class="disableDice" id="dice3">{{
+                            dice3 }}</button>
+                    </div>
+
+                    <div>
+                        <button v-if="dice4Selected==false" v-on:click="dice4Selected=true"
+                            class="btn btn-link text-success hold-0 btn-lg p-0 m-1 dice" :class="disableDice"
+                            id="dice4">{{ dice4 }}</button>
+                        <button v-if="dice4Selected==true" v-on:click="dice4Selected=false"
+                            class="btn btn-link text-pink btn-lg hold-4 p-0 m-1 dice" :class="disableDice" id="dice4">{{
+                            dice4 }}</button>
+                    </div>
+
+                    <div>
+                        <button v-if="dice5Selected==false" v-on:click="dice5Selected=true"
+                            class="btn btn-link text-success hold-0 btn-lg p-0 m-1 dice" :class="disableDice"
+                            id="dice5">{{ dice5 }}</button>
+                        <button v-if="dice5Selected==true" v-on:click="dice5Selected=false"
+                            class="btn btn-link text-pink btn-lg hold-5 p-0 m-1 dice" :class="disableDice" id="dice5">{{
+                            dice5 }}</button>
+                    </div>
+                </div>
+
+                <!-- Round and throw number information to player. -->
+                <div class="col-12 row my-4">
+                    <div class="col-md-6 d-md-flex d-none justify-content-center"
+                        v-if="gameStarted==true && highScoresVisible==false && endGameSituation==false">
+                        <div><span class="playername">{{ activePlayerName }}</span> <span class="playername2"> ist am
+                                Zug !</span></div>
+                        <!--p>{{ ui.round }}: {{ activeRoundNumber }} / {{ ui.totalRounds }}</p>
+                        <p>{{ ui.throwRound }}: <span v-if="activeThrowNumber>0">{{ activeThrowNumber }}</span> / {{ ui.totalThrows }}</p-->
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-center">
+                        <button type="button" class="btn btn-success btn-xxl waves-effect waves-light"
+                            v-on:click="clickThrowDice(gameId,activePlayer)"
+                            v-if="activeAiPlayer=='N' && gameStarted==true && highScoresVisible==false && activeThrowNumber!=3 && endGameSituation==false">
+                            würfeln<span class="btn-label-right">{{ activeThrowNumberReverse }}</span>
+                        </button>
+
+
+                    </div>
+                </div>
+                <template v-if="(gameStarted==false || endGameSituation==true) && highScoresVisible==false">
+                    <div class="col-12 d-flex justify-content-center mb-5">
+                        <button class="btn btn-success btn-xxl" v-on:click="clickNewGame(0,numberOfPlayers)"
+                            v-if="(gameStarted==false || endGameSituation==true) && highScoresVisible==false && ((player1NameInput!='' && numberOfPlayers==0) || (player1NameInput!='' && player2NameInput!='' && numberOfPlayers==1) || (player1NameInput!='' && player2NameInput!='' && player3NameInput!='' && numberOfPlayers==2) || (player1NameInput!='' && player2NameInput!='' && player3NameInput!='' && player4NameInput!='' && numberOfPlayers==3))">{{
+                            ui.newGame }}</button>
+                        <button class="btn btn-success btn-xxl" v-on:click="clickNewGame(0,numberOfPlayers)" v-else
+                            disabled>{{ ui.newGame }}</button>
+                        <button class="btn btn-light btn-xxl ml-2" v-on:click="clickHighScores()">{{ ui.highScores
+                            }}</button>
+
+                    </div>
+                </template>
+                <template v-else>
+                    <div class="col-12 d-flex justify-content-center">
+                        <button class="btn btn-light btn-xxl ml-2" v-on:click="clickHighScores()"
+                            v-if="highScoresVisible==true">{{ ui.back }}</button>
+                    </div>
+                </template>
+
+                <!-- The game table. Player can select which combination to choose to get points. -->
+                <!-- The game table. Player can select which combination to choose to get points. -->
+                <div class="container row" v-if="gameStarted==true && highScoresVisible==false"
+                    v-bind:style="disableClick">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center"></div>
+                            <div class="col text-center text-uppercase" v-for="playerName in playerNames">{{ playerName
+                                }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'ones')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="bborder fas fa-dice-1"></i>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="ones in onesValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ ones }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'twos')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-dice-2"></i>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="twos in twosValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ twos }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'threes')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-dice-3"></i>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="threes in threesValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ threes }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'fours')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-dice-4"></i>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="fours in foursValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ fours }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'fives')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-dice-5"></i>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="fives in fivesValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ fives }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'sixes')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-dice-6"></i>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="sixes in sixesValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ sixes }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <div class="btn btn-lg text-danger">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <!--i class="fas fa-square"></i-->
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-12"
+                                            style="font-weight: 900;">BONUS</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="bonus in bonusValue">
+                                <div class="btn btn-lg text-success" v-if="bonus>0">
+                                    <span class="fa-layers fa-fw fa-2x">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span class="fa-layers-counter" style="background: Tomato;">+{{ bonus }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-5">
+                        <div class="row d-none d-md-flex">
+                            <div class="col-2 d-flex justify-content-center"></div>
+                            <div class="col text-center text-uppercase" v-for="playerName in playerNames">{{ playerName
+                                }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'onePair')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-light" data-fa-transform="shrink-10 up-3"
+                                            style="font-weight: 900;">1</span>
+                                        <span class="fa-layers-text text-light" data-fa-transform="shrink-12 down-3"
+                                            style="font-weight: 900;">PAAR</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">PAAR</span-->
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="onePair in onePairValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ onePair }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'twoPairs')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-light" data-fa-transform="shrink-10 up-3"
+                                            style="font-weight: 900;">2</span>
+                                        <span class="fa-layers-text text-light" data-fa-transform="shrink-12 down-3"
+                                            style="font-weight: 900;">PAAR</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">PAAR</span-->
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="twoPairs in twoPairsValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ twoPairs }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'threeOfAKind')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-light" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">x3</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="threeOfAKind in threeOfAKindValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ threeOfAKind }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'fourOfAKind')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-light" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">x4</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="fourOfAKind in fourOfAKindValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ fourOfAKind }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'smallStraight')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <i class="text-light fas fa-road" data-fa-transform="shrink-6"></i>
+                                        <span class="fa-layers-counter" style="background: Tomato;">klein</span>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="smallStraight in smallStraightValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ smallStraight }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'largeStraight')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <i class="text-light fas fa-road" data-fa-transform="shrink-6"></i>
+                                        <span class="fa-layers-counter" style="background: Tomato;">groß</span>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="largeStraight in largeStraightValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ largeStraight }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'fullHouse')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <i class="text-light fas fa-home" data-fa-transform="shrink-6"></i>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="fullHouse in fullHouseValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ fullHouse }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'chance')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-light" data-fa-transform="shrink-4"
+                                            style="font-weight: 900;">?</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="chance in chanceValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ chance }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 d-flex justify-content-center">
+                                <button class="btn btn-link text-warning btn-lg"
+                                    v-on:click="clickEndRound(activeGameId,'yatzy')">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-light" data-fa-transform="shrink-12"
+                                            style="font-weight: 900;">YATZY</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="yatzy in yatzyValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                        <i class="fas fa-square"></i>
+                                        <span class="fa-layers-text text-dark" data-fa-transform="shrink-8"
+                                            style="font-weight: 900;">{{ yatzy }}</span>
+                                        <!--span class="fa-layers-counter" style="background:Tomato">x3</span-->
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!--div class="row totalPoints">
+                            <div class="col-2 d-flex justify-content-center">
+                                <div class="btn btn-link btn-lg text-danger">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                            <span class="fa-layers-text text-dark" data-fa-transform="shrink-12" style="font-weight: 900;">TOTAL</span>
+                                    <!--span class="fa-layers-counter" style="background:Tomato">x3</span- ->
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col d-flex justify-content-center" v-for="total in totalValue">
+                                <div class="btn btn-lg text-light">
+                                    <span class="fa-layers fa-fw fa-4x">
+                                            <!--i class="fas fa-square"></i- ->
+                                            <span class="fa-layers-text text-dark" data-fa-transform="shrink-8" style="font-weight: 900;">{{ total }}</span>
+                                    <!--span class="fa-layers-counter" style="background:Tomato">x3</span- ->
+                                    </span>
+                                </div>
+                            </div>
+                        </div-->
+                    </div>
+                </div>
+                <!-- High scores table. Visible if player clicks the High Score button. -->
+                <div v-if="highScoresVisible==true" class="m1">
+                    <h3>{{ ui.highScores }}</h3>
+                    <ul v-for="highScore in highScoresTable">
+                        <li class="muted">{{ highScore.score }} - {{ highScore.date }} - {{ highScore.name }}</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="grd-row-col-1-6--md" id="jatsi_right"></div>
+        </div>
+        <div class="grd-row">
+            <div class="grd-row-col-6 bg--light-gray m1"></div>
+        </div>
+    </div>
+</body>
+
+</html>
