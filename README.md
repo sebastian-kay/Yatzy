@@ -6,7 +6,7 @@ This is a Yatzy/Yahtzee game that runs on Node.js backend and Vue.js frontend.
 https://github.com/Tomkinen/jatsi
 
 You can test the game:
-http://yhatzee.ueberflie.ga/
+https://yhatzee.ueberflie.ga/
 
 ## Why does this repository exist?
 
