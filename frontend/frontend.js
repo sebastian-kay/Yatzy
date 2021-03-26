@@ -112,6 +112,9 @@ window.onload = function() {
         totalValue: ["", "", "", ""],
         bestPlayer: "",
         bestPlayerName: "",
+        isActive: false,
+        isActive2: false,
+        isActiveNoOverflow: true,
         disableClick: {
           "pointer-events": ""
         },
@@ -259,6 +262,17 @@ window.onload = function() {
             
 
           });
+        },
+
+        myFilter: function() {
+          this.isActive = !this.isActive;
+          setTimeout(() => {
+            this.isActive2 = !this.isActive2;
+            this.isActive = !this.isActive;
+            this.isActiveNoOverflow = false;
+            document.body.className = document.body.className.replace("NoOverflow","");
+          }, 1000);
+          // some code to filter users
         },
 
         // When player clicks 'Throw Dice' -button. Send post with gameid to api/throwdice.
