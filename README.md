@@ -3,10 +3,10 @@
 This is a Yatzy/Yahtzee game that runs on Node.js backend and Vue.js frontend.
 
 ## Original by Tomi Kinnunen
-Tomi Kinnunen
-
-You can test the game running in Heroku:
 https://github.com/Tomkinen/jatsi
+
+You can test the game:
+http://yhatzee.ueberflie.ga/
 
 ## Why does this repository exist?
 
